@@ -885,12 +885,14 @@ func (i *Interp) callFunctionByStack(caller *frame, pfn *function, ir register, 
 	pfn.deleteFrame(caller, fr)
 }
 
+// NoRecover calls run a function without defers in place of fr.run, and
+// like it stop at an abort.
 func (i *Interp) callFunctionByStackNoRecover0(caller *frame, pfn *function, ir register, ia []register) {
 	fr := pfn.allocFrame(caller)
 	for i := 0; i < len(ia); i++ {
 		fr.stack[i] = caller.reg(ia[i])
 	}
-	for fr.ipc != -1 {
+	for fr.ipc != -1 && atomic.LoadInt32(&i.exited) == 0 {
 		fn := fr.pfn.Instrs[fr.ipc]
 		fr.ipc++
 		fn(fr)
@@ -903,7 +905,7 @@ func (i *Interp) callFunctionByStackNoRecover1(caller *frame, pfn *function, ir 
 	for i := 0; i < len(ia); i++ {
 		fr.stack[i+1] = caller.reg(ia[i])
 	}
-	for fr.ipc != -1 {
+	for fr.ipc != -1 && atomic.LoadInt32(&i.exited) == 0 {
 		fn := fr.pfn.Instrs[fr.ipc]
 		fr.ipc++
 		fn(fr)
@@ -917,7 +919,7 @@ func (i *Interp) callFunctionByStackNoRecoverN(caller *frame, pfn *function, ir 
 	for i := 0; i < len(ia); i++ {
 		fr.stack[i+pfn.nres] = caller.reg(ia[i])
 	}
-	for fr.ipc != -1 {
+	for fr.ipc != -1 && atomic.LoadInt32(&i.exited) == 0 {
 		fn := fr.pfn.Instrs[fr.ipc]
 		fr.ipc++
 		fn(fr)
@@ -951,7 +953,7 @@ func (i *Interp) callFunctionByStackNoRecoverWithEnv(caller *frame, pfn *functio
 	for i := 0; i < pfn.nenv; i++ {
 		fr.stack[pfn.narg+i+pfn.nres] = env[i]
 	}
-	for fr.ipc != -1 {
+	for fr.ipc != -1 && atomic.LoadInt32(&i.exited) == 0 {
 		fn := fr.pfn.Instrs[fr.ipc]
 		fr.ipc++
 		fn(fr)
@@ -1152,7 +1154,13 @@ func (fr *frame) run() {
 			if fr.ipc == -1 || fr._defer == nil {
 				return // normal return
 			}
-			fr._panic = &_panic{arg: recover()}
+			p := recover()
+			if p == nil && atomic.LoadInt32(&fr.interp.exited) == 1 {
+				// aborted, not panicking: run the defers, start no panic
+				fr.runDefers()
+				return
+			}
+			fr._panic = &_panic{arg: p}
 			callee := fr.callee
 			for callee.aborted() {
 				if !callee._panic.isNil() {

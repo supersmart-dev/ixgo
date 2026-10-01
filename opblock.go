@@ -1225,6 +1225,15 @@ var (
 	typFramePtr = reflect.TypeOf((*frame)(nil))
 )
 
+// recovers reports whether fn's frames run its defers when a panic unwinds
+// them, so a call of fn can't take the NoRecover path. It asks fn, not its
+// compiled function, whose Recover is set only once its recover block is
+// visited: a call reached before that (fn calling itself, or a function fn
+// calls calling it back) would otherwise skip fn's defers.
+func (i *Interp) recovers(fn *ssa.Function) bool {
+	return fn.Recover != nil && i.ctx.Mode&DisableRecover == 0
+}
+
 func makeCallInstr(pfn *function, interp *Interp, instr ssa.Value, call *ssa.CallCommon) func(fr *frame) {
 	ir := pfn.regIndex(instr)
 	iv, ia, ib := getCallIndex(pfn, call)
@@ -1234,7 +1243,7 @@ func makeCallInstr(pfn *function, interp *Interp, instr ssa.Value, call *ssa.Cal
 	case *ssa.MakeClosure:
 		ifn := interp.loadFunction(fn.Fn.(*ssa.Function))
 		ia = append(ia, ib...)
-		if ifn.Recover == nil {
+		if !interp.recovers(ifn.Fn) {
 			switch ifn.nres {
 			case 0:
 				return func(fr *frame) {
@@ -1288,7 +1297,7 @@ func makeCallInstr(pfn *function, interp *Interp, instr ssa.Value, call *ssa.Cal
 			}
 		}
 		ifn := interp.loadFunction(fn)
-		if ifn.Recover == nil {
+		if !interp.recovers(fn) {
 			switch ifn.nres {
 			case 0:
 				return func(fr *frame) {
