@@ -119,6 +119,15 @@ func Twice(n int) int {
 	if v, err := interp.RunFunc("Twice", 90); err != nil || v != 180 {
 		t.Errorf("Twice(90) = %v, %v; want 180, each goroutine 90 deep", v, err)
 	}
+	// Less than 0 is no bound, as 0 is.
+	ctx = ixgo.NewContext(0)
+	ctx.SetMaxCallDepth(-1)
+	if interp, err = ctx.LoadInterp("main.go", src); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := interp.RunFunc("Run", 500); err != nil || v != 500 {
+		t.Errorf("unbounded Run(500) = %v, %v; want 500", v, err)
+	}
 }
 
 // Recursion past the bound in a goroutine ends the run with the goroutine's
