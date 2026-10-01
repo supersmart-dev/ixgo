@@ -171,3 +171,30 @@ func Run() string { return T{}.String() }
 		t.Errorf("Run() = %q, %v; want fmt's print of the panic past 100", v, err)
 	}
 }
+
+// A runtime error in a goroutine, handed on through RunContext, names the
+// line it happened on.
+func TestGoroutineRuntimeErrorLine(t *testing.T) {
+	const src = `package main
+
+func main() {
+	done := make(chan int)
+	go func() {
+		var counts map[string]int
+		counts["x"]++
+		done <- 1
+	}()
+	<-done
+}
+`
+	ctx := ixgo.NewContext(0)
+	ctx.RunContext = context.Background()
+	_, err := ctx.RunFile("main.go", src, nil)
+	var p ixgo.PanicError
+	if !errors.As(err, &p) || !strings.Contains(err.Error(), "nil map") {
+		t.Fatalf("got %v, want the goroutine's panic", err)
+	}
+	if stack := string(p.Stack()); !strings.Contains(stack, "main.go:7") {
+		t.Errorf("stack names no main.go:7:\n%s", stack)
+	}
+}

@@ -1107,10 +1107,16 @@ func makeInstr(interp *Interp, pfn *function, instr ssa.Instruction) func(fr *fr
 					defer func() {
 						if e := recover(); e != nil {
 							// An interpreted panic carries the stack it was raised
-							// on; the root's has none of the goroutine's frames.
+							// on; a runtime error's is the innermost frame still
+							// linked, as RunFunc's. The root has none of the
+							// goroutine's frames.
 							p, ok := e.(PanicError)
 							if !ok {
-								p = PanicError{stack: debugStack(root), Value: e}
+								fr := root
+								for fr.callee != nil {
+									fr = fr.callee
+								}
+								p = PanicError{stack: debugStack(fr), Value: e}
 							}
 							interp.cherror <- p
 						}
