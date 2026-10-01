@@ -125,16 +125,28 @@ var (
 )
 
 func (c makeFuncVal) callVoid() {
-	c.interp.callFunctionDiscardsResult(c.interp.tryDeferFrame(), c.pfn, nil, c.env)
+	caller := c.interp.tryDeferFrame()
+	if c.interp.maxDepth != 0 {
+		defer c.interp.leaveCallback(c.interp.enterCallback(caller))
+	}
+	c.interp.callFunctionDiscardsResult(caller, c.pfn, nil, c.env)
 }
 
 func (c makeFuncVal) callBool() bool {
-	result := c.interp.callFunction(c.interp.tryDeferFrame(), c.pfn, nil, c.env)
+	caller := c.interp.tryDeferFrame()
+	if c.interp.maxDepth != 0 {
+		defer c.interp.leaveCallback(c.interp.enterCallback(caller))
+	}
+	result := c.interp.callFunction(caller, c.pfn, nil, c.env)
 	return result != nil && result.(bool)
 }
 
 func (c makeFuncVal) callReflect(args []reflect.Value) []reflect.Value {
-	return c.interp.callFunctionByReflect(c.interp.tryDeferFrame(), c.pfn, c.typ, args, c.env)
+	caller := c.interp.tryDeferFrame()
+	if c.interp.maxDepth != 0 {
+		defer c.interp.leaveCallback(c.interp.enterCallback(caller))
+	}
+	return c.interp.callFunctionByReflect(caller, c.pfn, c.typ, args, c.env)
 }
 
 type interpExt struct{}

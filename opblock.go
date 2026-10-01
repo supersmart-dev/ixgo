@@ -173,6 +173,10 @@ func (p *function) newCacheReg() register {
 }
 
 func (p *function) allocFrame(caller *frame) *frame {
+	depth := caller.depth + 1
+	if max := p.Interp.maxDepth; max != 0 && depth > max {
+		panic(p.Interp.depthPanic(caller))
+	}
 	var fr *frame
 	if atomic.LoadInt32(&p.cached) == 1 {
 		fr = p.pool.Get().(*frame)
@@ -187,6 +191,7 @@ func (p *function) allocFrame(caller *frame) *frame {
 		fr.stack = append([]value{}, p.stack...)
 	}
 	fr.caller = caller
+	fr.depth = depth
 	fr.deferid = caller.deferid
 	caller.callee = fr
 	return fr
@@ -1100,9 +1105,14 @@ func makeInstr(interp *Interp, pfn *function, instr ssa.Instruction) func(fr *fr
 						root.pfn = f.pfn
 					}
 					defer func() {
-						e := recover()
-						if e != nil {
-							interp.cherror <- PanicError{stack: debugStack(root), Value: e}
+						if e := recover(); e != nil {
+							// An interpreted panic carries the stack it was raised
+							// on; the root's has none of the goroutine's frames.
+							p, ok := e.(PanicError)
+							if !ok {
+								p = PanicError{stack: debugStack(root), Value: e}
+							}
+							interp.cherror <- p
 						}
 					}()
 					interp.callDiscardsResult(root, fn, args, instr.Call.Args)

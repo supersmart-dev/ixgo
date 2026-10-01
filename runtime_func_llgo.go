@@ -134,7 +134,11 @@ func (i *interpExt) loadMakeFunc(ptr unsafe.Pointer) *makeFuncVal {
 func (pfn *function) makeFunction(typ reflect.Type, env []value) reflect.Value {
 	interp := pfn.Interp
 	v := reflect.MakeFunc(typ, func(args []reflect.Value) []reflect.Value {
-		return interp.callFunctionByReflect(interp.tryDeferFrame(), pfn, typ, args, env)
+		caller := interp.tryDeferFrame()
+		if interp.maxDepth != 0 {
+			defer interp.leaveCallback(interp.enterCallback(caller))
+		}
+		return interp.callFunctionByReflect(caller, pfn, typ, args, env)
 	})
 	fn := (*reflectValue)(unsafe.Pointer(&v)).ptr
 	interp.makeFuncs.Store((*llgoClosure)(fn).fn, &makeFuncVal{
