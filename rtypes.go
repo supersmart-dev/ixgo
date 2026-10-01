@@ -554,7 +554,17 @@ func (r *TypesLoader) ToType(rt reflect.Type) types.Type {
 			if r.hasTypeArgs(f.Type) {
 				continue
 			}
-			ft := r.ToType(f.Type)
+			var ft types.Type
+			if r.mode&OpaqueUnexportedFields != 0 && !f.IsExported() && !f.Anonymous {
+				// opaque: interpreted code can't name it; keep comparability only
+				if f.Type.Comparable() {
+					ft = types.Typ[types.UnsafePointer]
+				} else {
+					ft = typesDummySlice
+				}
+			} else {
+				ft = r.ToType(f.Type)
+			}
 			fields[i] = types.NewField(token.NoPos, pkg, f.Name, ft, f.Anonymous)
 		}
 	} else if kind == reflect.Interface {
