@@ -92,6 +92,8 @@ type Interp struct {
 	chexit       chan int                                    // call os.Exit code by chan for runtime.Goexit
 	cherror      chan PanicError                             // call by go func error for context
 	deferMap     sync.Map                                    // defer goroutine id -> call frame
+	callbackMu   sync.Mutex                                  // guards callbacks
+	callbacks    map[uint64]*frame                           // goroutine id -> innermost callback's caller, with maxDepth
 	rfuncMap     sync.Map                                    // reflect.Value(fn).Pointer -> *function
 	typesMutex   sync.RWMutex                                // findType/toType mutex
 	mainid       uint64                                      // main goroutine id
@@ -101,6 +103,7 @@ type Interp struct {
 	goexited     int32                                       // is call runtime.Goexit
 	exited       int32                                       // is call os.Exit
 	gcEnabled    bool                                        // program can invoke runtime.GC
+	maxDepth     int                                         // ctx's max call depth, 0 for no bound
 	interpExt
 }
 
@@ -159,8 +162,59 @@ func (i *Interp) tryDeferFrame() *frame {
 	return &frame{}
 }
 
+// enterCallback is for a call native code makes back into the interpreter
+// from caller (tryDeferFrame's), with a max call depth: a fresh caller
+// starts as deep as the innermost frame of the callback it's nested in on
+// its goroutine, so recursion through native code (a String method fmt
+// calls) meets the bound too, and caller is the goroutine's innermost
+// callback until leaveCallback. Frames before a goroutine's first callback
+// aren't counted.
+func (i *Interp) enterCallback(caller *frame) (gid uint64, outer *frame) {
+	gid = goroutineID()
+	i.callbackMu.Lock()
+	if i.callbacks == nil {
+		i.callbacks = make(map[uint64]*frame)
+	}
+	outer = i.callbacks[gid]
+	i.callbacks[gid] = caller
+	i.callbackMu.Unlock()
+	if outer != nil && caller.depth == 0 {
+		in := outer
+		for in.callee != nil {
+			in = in.callee
+		}
+		if in.depth >= i.maxDepth {
+			i.leaveCallback(gid, outer)
+			panic(i.depthPanic(in))
+		}
+		caller.depth = in.depth
+	}
+	return
+}
+
+// depthPanic is what a call past the max call depth panics with, on the
+// stack of fr, the frame calling.
+func (i *Interp) depthPanic(fr *frame) PanicError {
+	return PanicError{stack: debugStack(fr), Value: RuntimeError(fmt.Sprintf("recursion past %d calls deep", i.maxDepth))}
+}
+
+func (i *Interp) leaveCallback(gid uint64, outer *frame) {
+	i.callbackMu.Lock()
+	if outer == nil {
+		delete(i.callbacks, gid)
+	} else {
+		i.callbacks[gid] = outer
+	}
+	i.callbackMu.Unlock()
+}
+
 func (pfn *function) callFunctionByReflect(mtyp reflect.Type, args []reflect.Value, env []interface{}) []reflect.Value {
-	return pfn.Interp.callFunctionByReflect(pfn.Interp.tryDeferFrame(), pfn, mtyp, args, env)
+	i := pfn.Interp
+	caller := i.tryDeferFrame()
+	if i.maxDepth != 0 {
+		defer i.leaveCallback(i.enterCallback(caller))
+	}
+	return i.callFunctionByReflect(caller, pfn, mtyp, args, env)
 }
 
 func (i *Interp) FindMethod(mtyp reflect.Type, fn *types.Func) func([]reflect.Value) []reflect.Value {
@@ -205,6 +259,7 @@ type frame struct {
 	phiVals []value // temporary values for parallel phi assignments
 	ipc     int
 	pred    int
+	depth   int // calls deep in its goroutine
 	deferid uint64
 }
 
@@ -1253,6 +1308,7 @@ func newInterp(ctx *Context, mainpkg *ssa.Package, globals map[string]interface{
 		msets:        make(map[reflect.Type](map[string]*ssa.Function)),
 		chexit:       make(chan int),
 		mainid:       goroutineID(),
+		maxDepth:     ctx.maxCallDepth,
 	}
 
 	ctx.loadPkgMu.Lock()

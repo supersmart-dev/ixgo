@@ -101,6 +101,7 @@ type Context struct {
 	nestedMap     map[*types.Named]int                                     // nested named index
 	rootp         atomic.Pointer[string]                                   // project root
 	callForPool   int                                                      // least call count for enable function pool
+	maxCallDepth  int                                                      // deepest a goroutine's calls nest, 0 for no bound
 	Mode          Mode                                                     // mode
 	BuilderMode   ssa.BuilderMode                                          // ssa builder mode
 	Builder       *SSABuilder                                              // ssa builder
@@ -256,6 +257,15 @@ func (ctx *Context) SetUnsafeSizes(sizes types.Sizes) {
 // SetLeastCallForEnablePool set least call count for enable function pool, default 64
 func (ctx *Context) SetLeastCallForEnablePool(count int) {
 	ctx.callForPool = count
+}
+
+// SetMaxCallDepth bounds how deep a goroutine's calls nest in interpreters
+// made after it: a call past depth panics with the runtime error "recursion
+// past depth calls deep", which recover catches like any other, where
+// recursion that never ends would overflow the goroutine's stack, a fatal
+// error. 0, the default, is no bound.
+func (ctx *Context) SetMaxCallDepth(depth int) {
+	ctx.maxCallDepth = depth
 }
 
 func (ctx *Context) SetDebug(fn func(*DebugInfo)) {
