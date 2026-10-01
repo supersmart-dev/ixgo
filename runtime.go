@@ -85,34 +85,40 @@ func runtimeCallers(fr *frame, skip int, pc []uintptr) int {
 	if len(pc) == 0 {
 		return 0
 	}
-	pcs := make([]uintptr, 1)
-
-	// runtime.Caller itself
-	runtime.Callers(0, pcs)
-	pcs[0] -= 1
-
-	caller := fr
-	for caller.valid() {
-		link := caller._panic
-		for link != nil {
-			pcs = append(pcs, uintptr(reflect.ValueOf(runtimePanic).Pointer()))
-			pcs = append(pcs, link.pcs...)
-			link = link.link
-		}
-		pcs = append(pcs, caller.pc())
-		caller = caller.caller
-	}
-	var rpc []uintptr
-	for _, pc := range pcs {
-		// skip wrapper method func
-		if fn := findFuncByPC(fr.interp, int(pc)); fn != nil && isWrapperFuncName(fn.Fn.String()) {
-			continue
-		}
-		rpc = append(rpc, pc)
-	}
 	if skip < 0 {
 		skip = 0
-	} else if skip > len(rpc)-1 {
+	}
+	// add takes pc, unless it's a wrapper method's, and reports whether
+	// there are enough: the walk stops there, so a deep stack costs no more
+	// than pc holds.
+	var rpc []uintptr
+	add := func(p uintptr) bool {
+		// skip wrapper method func
+		if fn := findFuncByPC(fr.interp, int(p)); fn != nil && isWrapperFuncName(fn.Fn.String()) {
+			return false
+		}
+		rpc = append(rpc, p)
+		return len(rpc) >= skip+len(pc)
+	}
+
+	// runtime.Caller itself
+	pcs := make([]uintptr, 1)
+	runtime.Callers(0, pcs)
+	if !add(pcs[0] - 1) {
+		panicPC := uintptr(reflect.ValueOf(runtimePanic).Pointer())
+	walk:
+		for caller := fr; caller.valid(); caller = caller.caller {
+			for link := caller._panic; link != nil; link = link.link {
+				if add(panicPC) || link.each(add) {
+					break walk
+				}
+			}
+			if add(caller.pc()) {
+				break
+			}
+		}
+	}
+	if skip > len(rpc)-1 {
 		return 0
 	}
 	return copy(pc, rpc[skip:])

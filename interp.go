@@ -52,6 +52,7 @@ import (
 	"go/token"
 	"go/types"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -615,9 +616,29 @@ func (fr *frame) plainError(instr funcInstr, text string) error {
 type _panic struct {
 	arg       interface{}
 	link      *_panic
-	pcs       []uintptr
+	pcs       []uintptr // frames it unwound, innermost first, above below's
+	below     *_panic   // the record of the frames below those, if any
 	aborted   bool
 	recovered bool
+}
+
+// each calls f with the pcs of the frames p unwound, below's first,
+// innermost first, until f returns true, and reports whether it did. A
+// frame's record holds its callee's rather than a copy, so a panic
+// unwinding d frames records them once, not d times.
+func (p *_panic) each(f func(pc uintptr) bool) bool {
+	var chain []*_panic
+	for q := p; q != nil; q = q.below {
+		chain = append(chain, q)
+	}
+	for j := len(chain) - 1; j >= 0; j-- {
+		for _, pc := range chain[j].pcs {
+			if f(pc) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (p *_panic) isNil() bool {
@@ -627,6 +648,7 @@ func (p *_panic) isNil() bool {
 // runDefer runs a deferred call d.
 // It always returns normally, but may set or clear fr.panic.
 func (fr *frame) runDefer(d *_defer) (ok bool) {
+	before := fr.callee
 	defer func() {
 		if !ok {
 			// Deferred call created a new state of panic.
@@ -634,13 +656,15 @@ func (fr *frame) runDefer(d *_defer) (ok bool) {
 				fr._panic.aborted = true
 			}
 			fr._panic = &_panic{arg: recover(), link: fr._panic}
-			// no tail add callee.pc
-			if d.tail != nil {
-				callee := fr.callee
-				for callee.aborted() {
-					fr._panic.pcs = append([]uintptr{callee.pc()}, fr._panic.pcs...)
-					callee = callee.callee
+			// The deferred call's frames, if it was interpreted: the frame
+			// above, finding this record, looks no further down.
+			if fr.callee != before {
+				var pcs []uintptr
+				for callee := fr.callee; callee.aborted(); callee = callee.callee {
+					pcs = append(pcs, callee.pc())
 				}
+				slices.Reverse(pcs)
+				fr._panic.pcs = pcs
 			}
 		}
 	}()
@@ -1216,8 +1240,10 @@ func (fr *frame) run() {
 				return
 			}
 			fr._panic = &_panic{arg: p}
-			callee := fr.callee
-			for callee.aborted() {
+			// The frames unwound below fr, as far as the first that kept a
+			// record of the panic: it holds those below it.
+			var pcs []uintptr
+			for callee := fr.callee; callee.aborted(); callee = callee.callee {
 				if !callee._panic.isNil() {
 					if !callee._panic.link.isNil() {
 						fr._panic.link = callee._panic.link
@@ -1228,14 +1254,15 @@ func (fr *frame) run() {
 						}
 						link.pcs = append(link.pcs, callee.pc())
 					} else {
-						fr._panic.pcs = append([]uintptr{callee.pc()}, fr._panic.pcs...)
+						pcs = append(pcs, callee.pc())
 					}
-					fr._panic.pcs = append(append([]uintptr{}, callee._panic.pcs...), fr._panic.pcs...)
-				} else {
-					fr._panic.pcs = append([]uintptr{callee.pc()}, fr._panic.pcs...)
+					fr._panic.below = callee._panic
+					break
 				}
-				callee = callee.callee
+				pcs = append(pcs, callee.pc())
 			}
+			slices.Reverse(pcs)
+			fr._panic.pcs = pcs
 			fr.runDefers()
 			for _, fn := range fr.pfn.Recover {
 				fn(fr)

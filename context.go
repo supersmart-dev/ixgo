@@ -263,9 +263,9 @@ func (ctx *Context) SetLeastCallForEnablePool(count int) {
 // made after it: a call past depth panics with the runtime error "recursion
 // past depth calls deep", which recover catches like any other, where
 // recursion that never ends would overflow the goroutine's stack, a fatal
-// error. 0, the default, is no bound.
+// error. 0, the default, or less is no bound.
 func (ctx *Context) SetMaxCallDepth(depth int) {
-	ctx.maxCallDepth = depth
+	ctx.maxCallDepth = max(depth, 0)
 }
 
 func (ctx *Context) SetDebug(fn func(*DebugInfo)) {
