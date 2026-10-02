@@ -55,6 +55,9 @@ func makeUnOpNOT(pfn *function, instr *ssa.UnOp) func(fr *frame) {
 func makeUnOpMUL(pfn *function, instr *ssa.UnOp) func(fr *frame) {
 	ir := pfn.regIndex(instr)
 	ix, kx, vx := pfn.regIndex3(instr.X)
+	if fn := makeDerefFast(instr, pfn.Interp.preToType(instr.X.Type()), ir, ix, kx, vx); fn != nil {
+		return fn
+	}
 	if kx == kindGlobal {
 		v := reflect.ValueOf(vx)
 		return func(fr *frame) {

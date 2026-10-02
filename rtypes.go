@@ -65,6 +65,7 @@ type TypesLoader struct {
 	pkgloads  map[string]func() error
 	rcache    sync.Map // map[reflect.Type]types.Type
 	mode      Mode
+	base      *TypesLoader // a TypesCache's, read before these and never written
 }
 
 // NewTypesLoader install package and readonly
@@ -84,7 +85,22 @@ func NewTypesLoader(ctx *Context, mode Mode) Loader {
 }
 
 func (r *TypesLoader) Iterate(fn func(typ types.Type, value interface{})) {
+	if r.base != nil {
+		r.base.tcache.Iterate(fn)
+	}
 	r.tcache.Iterate(fn)
+}
+
+// pkg is path's package: this loader's, else its base's.
+func (r *TypesLoader) pkg(path string) (*types.Package, bool) {
+	if p, ok := r.packages[path]; ok {
+		return p, true
+	}
+	if r.base != nil {
+		p, ok := r.base.packages[path]
+		return p, ok
+	}
+	return nil, false
 }
 
 func (r *TypesLoader) SetImport(path string, pkg *types.Package, load func() error) error {
@@ -96,7 +112,9 @@ func (r *TypesLoader) SetImport(path string, pkg *types.Package, load func() err
 }
 
 func (r *TypesLoader) Installed(path string) (pkg *Package, ok bool) {
-	pkg, ok = r.installed[path]
+	if pkg, ok = r.installed[path]; !ok && r.base != nil {
+		pkg, ok = r.base.installed[path]
+	}
 	return
 }
 
@@ -104,12 +122,18 @@ func (r *TypesLoader) Packages() (pkgs []*types.Package) {
 	for _, pkg := range r.packages {
 		pkgs = append(pkgs, pkg)
 	}
+	if r.base != nil {
+		for path, pkg := range r.base.packages {
+			if _, ok := r.packages[path]; !ok {
+				pkgs = append(pkgs, pkg)
+			}
+		}
+	}
 	return
 }
 
 func (r *TypesLoader) LookupPackage(pkgpath string) (*types.Package, bool) {
-	pkg, ok := r.packages[pkgpath]
-	return pkg, ok
+	return r.pkg(pkgpath)
 }
 
 func lookupReflectByNamed(p *Package, name string) (reflect.Type, bool) {
@@ -133,7 +157,7 @@ func (r *TypesLoader) lookupRelfect(typ types.Type) (reflect.Type, bool) {
 	}
 	if named, ok := typ.(*types.Named); ok {
 		if pkg := named.Obj().Pkg(); pkg != nil {
-			if p, ok := r.installed[pkg.Path()]; ok {
+			if p, ok := r.Installed(pkg.Path()); ok {
 				if rt, ok := lookupReflectByNamed(p, named.Obj().Name()); ok {
 					if star {
 						rt = reflect.PtrTo(rt)
@@ -150,6 +174,11 @@ func (r *TypesLoader) LookupReflect(typ types.Type) (reflect.Type, bool) {
 	if rt := r.tcache.At(typ); rt != nil {
 		return rt.(reflect.Type), true
 	}
+	if r.base != nil {
+		if rt := r.base.tcache.At(typ); rt != nil {
+			return rt.(reflect.Type), true
+		}
+	}
 	if rt, ok := r.lookupRelfect(typ); ok {
 		r.tcache.Set(typ, rt)
 		return rt, ok
@@ -160,6 +189,9 @@ func (r *TypesLoader) LookupReflect(typ types.Type) (reflect.Type, bool) {
 func (r *TypesLoader) LookupTypes(typ reflect.Type) (types.Type, bool) {
 	if t, ok := r.rcache.Load(typ); ok {
 		return t.(types.Type), true
+	}
+	if r.base != nil {
+		return r.base.LookupTypes(typ)
 	}
 	return nil, false
 }
@@ -179,6 +211,14 @@ func (r *TypesLoader) Import(path string) (*types.Package, error) {
 	pload, ok := registerPkgs[path]
 	if !ok {
 		return nil, fmt.Errorf("not found package %v", path)
+	}
+	// A registered package the base loaded is its; a package the base made
+	// up for a type's sake (GetPackage) isn't one to import, as it isn't
+	// where it's made.
+	if r.base != nil {
+		if p, ok := r.base.packages[path]; ok {
+			return p, nil
+		}
 	}
 	pkg := pload.Package()
 	p := types.NewPackage(pkg.Path, pkg.Name)
@@ -209,7 +249,7 @@ func (r *TypesLoader) Import(path string) (*types.Package, error) {
 	}
 	var list []*types.Package
 	for dep := range pkg.Deps {
-		if p, ok := r.packages[dep]; ok {
+		if p, ok := r.pkg(dep); ok {
 			list = append(list, p)
 		}
 	}
@@ -365,7 +405,7 @@ func (r *TypesLoader) GetPackage(pkg string) *types.Package {
 	if pkg == "" {
 		return nil
 	}
-	if p, ok := r.packages[pkg]; ok {
+	if p, ok := r.pkg(pkg); ok {
 		return p
 	}
 	if _, ok := registerPkgs[pkg]; ok {
@@ -427,14 +467,14 @@ func (r *TypesLoader) toMethod(pkg *types.Package, recv *types.Var, inoff int, r
 }
 
 func (r *TypesLoader) ToType(rt reflect.Type) types.Type {
-	if t, ok := r.rcache.Load(rt); ok {
-		return t.(types.Type)
+	if t, ok := r.LookupTypes(rt); ok {
+		return t
 	}
 	var isNamed bool
 	var pkgPath string
 	// check complete pkg named type
 	if pkgPath = rt.PkgPath(); pkgPath != "" {
-		if pkg, ok := r.packages[pkgPath]; ok && pkg.Complete() {
+		if pkg, ok := r.pkg(pkgPath); ok && pkg.Complete() {
 			if obj := pkg.Scope().Lookup(rt.Name()); obj != nil {
 				typ := obj.Type()
 				r.rcache.Store(rt, typ)
