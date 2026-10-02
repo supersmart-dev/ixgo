@@ -196,6 +196,12 @@ func (sp *SourcePackage) Load() (err error) {
 
 // NewContext create a new Context
 func NewContext(mode Mode) *Context {
+	return newContext(mode, false)
+}
+
+// newContext is NewContext's, without its patches when cached: a context
+// on a TypesCache takes the cache's.
+func newContext(mode Mode, cached bool) *Context {
 	ctx := &Context{
 		FileSet:      token.NewFileSet(),
 		Mode:         mode,
@@ -217,7 +223,7 @@ func NewContext(mode Mode) *Context {
 	ctx.Importer = NewImporter(ctx)
 	ctx.Builder = NewSSABuilder(ctx)
 
-	if mode&DisableAutoLoadPatchs == 0 {
+	if mode&DisableAutoLoadPatchs == 0 && !cached {
 		for path, srcs := range registerPatchs {
 			for _, src := range srcs {
 				err := ctx.RegisterPatch(path, src)

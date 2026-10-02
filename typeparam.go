@@ -187,7 +187,7 @@ func (r *TypesLoader) hasTypeArgs(rt reflect.Type) bool {
 		return r.hasTypeArgs(rt.Key()) || r.hasTypeArgs(rt.Elem())
 	case reflect.Struct:
 		if pkgPath := rt.PkgPath(); pkgPath != "" {
-			if pkg, ok := r.packages[pkgPath]; ok && pkg.Complete() {
+			if pkg, ok := r.pkg(pkgPath); ok && pkg.Complete() {
 				name := rt.Name()
 				var typeArgs string
 				if n := strings.Index(name, "["); n != -1 {
