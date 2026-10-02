@@ -104,6 +104,14 @@ func (pfn *function) makeFunction(typ reflect.Type, env []value) reflect.Value {
 			return reflect.ValueOf(c.callVoid)
 		case callbackBoolType:
 			return reflect.ValueOf(c.callBool)
+		case callbackLessType:
+			return reflect.ValueOf(c.callLess)
+		case callbackIntBoolType:
+			return reflect.ValueOf(c.callIntBool)
+		case callbackRuneBoolType:
+			return reflect.ValueOf(c.callRuneBool)
+		case callbackRuneRuneType:
+			return reflect.ValueOf(c.callRuneRune)
 		}
 	}
 	return reflect.MakeFunc(typ, c.callReflect)
@@ -122,6 +130,23 @@ var (
 	callbackVoidPC    = reflect.ValueOf(makeFuncVal{}.callVoid).Pointer()
 	callbackBoolPC    = reflect.ValueOf(makeFuncVal{}.callBool).Pointer()
 	callbackReflectPC = reflect.ValueOf(makeFuncVal{}.callReflect).Pointer()
+
+	// The commonest callbacks native code makes besides: sort.Slice's
+	// less, sort.Search's, and strings' per-rune functions (FieldsFunc,
+	// IndexFunc, TrimFunc, Map). Through reflect each call built slices
+	// of reflect.Values for its arguments and results.
+	callbackLessType     = reflect.TypeFor[func(int, int) bool]()
+	callbackIntBoolType  = reflect.TypeFor[func(int) bool]()
+	callbackRuneBoolType = reflect.TypeFor[func(rune) bool]()
+	callbackRuneRuneType = reflect.TypeFor[func(rune) rune]()
+	callbackTypedPCs     = map[uintptr]bool{
+		callbackVoidPC: true,
+		callbackBoolPC: true,
+		reflect.ValueOf(makeFuncVal{}.callLess).Pointer():     true,
+		reflect.ValueOf(makeFuncVal{}.callIntBool).Pointer():  true,
+		reflect.ValueOf(makeFuncVal{}.callRuneBool).Pointer(): true,
+		reflect.ValueOf(makeFuncVal{}.callRuneRune).Pointer(): true,
+	}
 )
 
 func (c makeFuncVal) callVoid() {
@@ -139,6 +164,35 @@ func (c makeFuncVal) callBool() bool {
 	}
 	result := c.interp.callFunction(caller, c.pfn, nil, c.env)
 	return result != nil && result.(bool)
+}
+
+// call calls c with args, its single result, nil if an abort stopped it.
+func (c makeFuncVal) call(args ...value) value {
+	caller := c.interp.tryDeferFrame()
+	if c.interp.maxDepth != 0 {
+		defer c.interp.leaveCallback(c.interp.enterCallback(caller))
+	}
+	return c.interp.callFunction(caller, c.pfn, args, c.env)
+}
+
+func (c makeFuncVal) callLess(i, j int) bool {
+	r, _ := c.call(i, j).(bool)
+	return r
+}
+
+func (c makeFuncVal) callIntBool(i int) bool {
+	r, _ := c.call(i).(bool)
+	return r
+}
+
+func (c makeFuncVal) callRuneBool(r rune) bool {
+	ok, _ := c.call(r).(bool)
+	return ok
+}
+
+func (c makeFuncVal) callRuneRune(r rune) rune {
+	m, _ := c.call(r).(rune)
+	return m
 }
 
 func (c makeFuncVal) callReflect(args []reflect.Value) []reflect.Value {
@@ -159,7 +213,7 @@ func (*interpExt) getMakeFuncVal(fn interface{}) *makeFuncVal {
 	}
 	fv, n := funcval.Get(fn)
 	switch {
-	case n == 0 && (fv.Fn == callbackVoidPC || fv.Fn == callbackBoolPC):
+	case n == 0 && callbackTypedPCs[fv.Fn]:
 		// Direct method value.
 	case n == 1 && fv.Fn == callbackReflectPC:
 		// One reflect.MakeFunc bridge.
