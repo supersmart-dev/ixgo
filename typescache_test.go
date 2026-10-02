@@ -177,6 +177,30 @@ func TestTypesCacheMadeUpPackages(t *testing.T) {
 	}
 }
 
+// A package only native ones import is built if it exports a concrete
+// type, whose values native code might hand over.
+func TestReachable(t *testing.T) {
+	for src, want := range map[string]bool{
+		"package p\n\nfunc F() int { return 1 }\n":                        false,
+		"package p\n\ntype I interface{ M() }\n":                           false,
+		"package p\n\ntype t int\n\nfunc (t) M() {}\n":                     false,
+		"package p\n\ntype T int\n\nfunc (T) M() {}\n":                     true,
+		"package p\n\ntype S[E any] struct{ e E }\n\nfunc (S[E]) M() {}\n": true,
+	} {
+		ctx := NewContext(0)
+		if err := ctx.AddImportFile("ex/p", "p.go", src); err != nil {
+			t.Fatal(err)
+		}
+		sp := ctx.SourcePackage("ex/p")
+		if err := sp.Load(); err != nil {
+			t.Fatal(err)
+		}
+		if got := reachable(sp); got != want {
+			t.Errorf("reachable(%q) = %v, want %v", src, got, want)
+		}
+	}
+}
+
 func BenchmarkLoadFile(b *testing.B) {
 	c, err := NewTypesCache(0)
 	if err != nil {

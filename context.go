@@ -956,7 +956,25 @@ func (b *SSABuilder) BuildImports(pkg *types.Package, src bool) {
 	if src {
 		b.applyImportPatches(pkg)
 	}
-	b.BuildPackages(pkg.Imports())
+	b.buildPackages(pkg.Imports(), !src)
+}
+
+// reachable reports whether a program can reach sp's code when only
+// native packages import it: through a value of a type it declares that
+// native code hands over. A native package never runs its imports' code
+// (its SSA package has no body, so not even their init), and code that
+// names a function of sp imports it. So sp is built only if it exports a
+// concrete type, or once source imports it. fmt's imports reach slices,
+// cmp, and iter's patch, which otherwise every program importing fmt
+// would build.
+func reachable(sp *SourcePackage) bool {
+	scope := sp.Package.Scope()
+	for _, name := range scope.Names() {
+		if tn, ok := scope.Lookup(name).(*types.TypeName); ok && tn.Exported() && !types.IsInterface(tn.Type()) {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *SSABuilder) applyImportPatches(p *types.Package) {
@@ -990,9 +1008,17 @@ func (b *SSABuilder) applyImportPatches(p *types.Package) {
 }
 
 func (b *SSABuilder) BuildPackages(pkgs []*types.Package) {
+	b.buildPackages(pkgs, false)
+}
+
+// buildPackages builds pkgs, imported by a native package if native.
+func (b *SSABuilder) buildPackages(pkgs []*types.Package, native bool) {
 	ctx := b.ctx
 	for _, p := range pkgs {
 		if !b.created[p] {
+			if pkg, ok := ctx.pkgs[p.Path()]; ok && native && pkg.Loaded() && !reachable(pkg) {
+				continue // until source imports it
+			}
 			b.created[p] = true
 			if pkg, ok := ctx.pkgs[p.Path()]; ok {
 				if !pkg.Loaded() {
