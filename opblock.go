@@ -831,11 +831,14 @@ func makeInstr(interp *Interp, pfn *function, instr ssa.Instruction) func(fr *fr
 				fr.setReg(ir, reflect.ValueOf(v).String()[asInt(idx)])
 			}
 		case reflect.Map:
+			if fn := makeLookupFast(instr, typ, ir, ix, ii); fn != nil {
+				return fn
+			}
 			return func(fr *frame) {
 				m := fr.reg(ix)
 				idx := fr.reg(ii)
 				vm := reflect.ValueOf(m)
-				v := vm.MapIndex(reflect.ValueOf(idx))
+				v := vm.MapIndex(valueOf(typ.Key(), idx))
 				ok := v.IsValid()
 				var rv value
 				if ok {
@@ -1190,18 +1193,23 @@ func makeInstr(interp *Interp, pfn *function, instr ssa.Instruction) func(fr *fr
 		im := pfn.regIndex(instr.Map)
 		ik := pfn.regIndex(instr.Key)
 		iv, kv, vv := pfn.regIndex3(instr.Value)
+		typ := interp.preToType(instr.Map.Type())
+		if fn := makeMapUpdateFast(typ, im, ik, iv, kv, vv); fn != nil {
+			return fn
+		}
+		// A nil interface is the zero of the map's key or element type:
+		// as reflect's invalid Value, SetMapIndex would delete the key.
+		key, elem := typ.Key(), typ.Elem()
 		if kv.isStatic() {
+			v := valueOf(elem, vv)
 			return func(fr *frame) {
 				vm := reflect.ValueOf(fr.reg(im))
-				vk := reflect.ValueOf(fr.reg(ik))
-				vm.SetMapIndex(vk, reflect.ValueOf(vv))
+				vm.SetMapIndex(valueOf(key, fr.reg(ik)), v)
 			}
 		}
 		return func(fr *frame) {
 			vm := reflect.ValueOf(fr.reg(im))
-			vk := reflect.ValueOf(fr.reg(ik))
-			v := fr.reg(iv)
-			vm.SetMapIndex(vk, reflect.ValueOf(v))
+			vm.SetMapIndex(valueOf(key, fr.reg(ik)), valueOf(elem, fr.reg(iv)))
 		}
 	case *ssa.DebugRef:
 		if v, ok := instr.Object().(*types.Var); ok {
