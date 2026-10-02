@@ -260,7 +260,8 @@ type frame struct {
 	phiVals []value // temporary values for parallel phi assignments
 	ipc     int
 	pred    int
-	depth   int // calls deep in its goroutine
+	depth   int    // calls deep in its goroutine
+	boxes   *boxes // its goroutine's (boxes.go)
 	deferid uint64
 }
 

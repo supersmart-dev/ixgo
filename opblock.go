@@ -192,6 +192,10 @@ func (p *function) allocFrame(caller *frame) *frame {
 	}
 	fr.caller = caller
 	fr.depth = depth
+	if caller.boxes == nil {
+		caller.boxes = &boxes{}
+	}
+	fr.boxes = caller.boxes
 	fr.deferid = caller.deferid
 	caller.callee = fr
 	return fr

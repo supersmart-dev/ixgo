@@ -31,6 +31,9 @@ import (
 var (
 	ints = []string{"int", "int8", "int16", "int32", "int64",
 		"uint", "uint8", "uint16", "uint32", "uint64", "uintptr"}
+	// boxed are the kinds a frame boxes itself (boxes.go), each with its
+	// set function, fr.setInt as the template names it.
+	boxed  = map[string]bool{"int": true, "int64": true, "uint": true, "uint64": true, "uintptr": true, "float64": true}
 	floats = []string{"float32", "float64"}
 	comps  = []string{"complex64", "complex128"}
 	str    = []string{"string"}
@@ -87,11 +90,17 @@ func makeFuncOp(buf *bytes.Buffer, fnname string, op string, kinds []string) {
 			"Int", strings.Title(kind),
 			"int", kind,
 			"+", op)
+		tmpl := func_case1
 		if op == "/" && strings.Contains(kind, "int") {
-			r.WriteString(buf, div_case1)
-		} else {
-			r.WriteString(buf, func_case1)
+			tmpl = div_case1
 		}
+		if boxed[kind] {
+			// What's computed as it runs; a constant result is boxed as
+			// it was.
+			tmpl = strings.ReplaceAll(tmpl, "fr.setReg(ir, x", "fr.setInt(ir, x")
+			tmpl = strings.ReplaceAll(tmpl, "fr.setReg(ir, fr.", "fr.setInt(ir, fr.")
+		}
+		r.WriteString(buf, tmpl)
 	}
 	buf.WriteString(`}
 	} else {

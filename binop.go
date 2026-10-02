@@ -36,12 +36,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x+fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)+y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)+fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)+fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -88,12 +88,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x+fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)+y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)+fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)+fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -101,12 +101,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x+fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)+y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)+fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)+fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -153,12 +153,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x+fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)+y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)+fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)+fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -166,12 +166,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x+fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)+y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)+fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)+fr.reg(iy).(uintptr)) }
 			}
 		case reflect.Float32:
 			if kx == kindConst && ky == kindConst {
@@ -192,12 +192,12 @@ func makeBinOpADD(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(float64)
-				return func(fr *frame) { fr.setReg(ir, x+fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, x+fr.reg(iy).(float64)) }
 			} else if ky == kindConst {
 				y := vy.(float64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)+y) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)+y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)+fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)+fr.reg(iy).(float64)) }
 			}
 		case reflect.Complex64:
 			if kx == kindConst && ky == kindConst {
@@ -467,12 +467,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x-fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)-y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)-fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)-fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -519,12 +519,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x-fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)-y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)-fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)-fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -532,12 +532,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x-fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)-y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)-fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)-fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -584,12 +584,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x-fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)-y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)-fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)-fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -597,12 +597,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x-fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)-y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)-fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)-fr.reg(iy).(uintptr)) }
 			}
 		case reflect.Float32:
 			if kx == kindConst && ky == kindConst {
@@ -623,12 +623,12 @@ func makeBinOpSUB(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(float64)
-				return func(fr *frame) { fr.setReg(ir, x-fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, x-fr.reg(iy).(float64)) }
 			} else if ky == kindConst {
 				y := vy.(float64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)-y) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)-y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)-fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)-fr.reg(iy).(float64)) }
 			}
 		case reflect.Complex64:
 			if kx == kindConst && ky == kindConst {
@@ -872,12 +872,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x*fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)*y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)*fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)*fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -924,12 +924,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x*fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)*y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)*fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)*fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -937,12 +937,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x*fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)*y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)*fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)*fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -989,12 +989,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x*fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)*y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)*fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)*fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -1002,12 +1002,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x*fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)*y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)*fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)*fr.reg(iy).(uintptr)) }
 			}
 		case reflect.Float32:
 			if kx == kindConst && ky == kindConst {
@@ -1028,12 +1028,12 @@ func makeBinOpMUL(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(float64)
-				return func(fr *frame) { fr.setReg(ir, x*fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, x*fr.reg(iy).(float64)) }
 			} else if ky == kindConst {
 				y := vy.(float64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)*y) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)*y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)*fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)*fr.reg(iy).(float64)) }
 			}
 		case reflect.Complex64:
 			if kx == kindConst && ky == kindConst {
@@ -1276,18 +1276,18 @@ func makeBinOpQUO(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				x := vx.(int)
 				y := vy.(int)
 				if y == 0 {
-					return func(fr *frame) { fr.setReg(ir, x/y) }
+					return func(fr *frame) { fr.setInt(ir, x/y) }
 				}
 				v := x / y
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x/fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)/y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)/fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)/fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -1348,36 +1348,36 @@ func makeBinOpQUO(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				x := vx.(int64)
 				y := vy.(int64)
 				if y == 0 {
-					return func(fr *frame) { fr.setReg(ir, x/y) }
+					return func(fr *frame) { fr.setInt64(ir, x/y) }
 				}
 				v := x / y
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x/fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)/y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)/fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)/fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
 				x := vx.(uint)
 				y := vy.(uint)
 				if y == 0 {
-					return func(fr *frame) { fr.setReg(ir, x/y) }
+					return func(fr *frame) { fr.setUint(ir, x/y) }
 				}
 				v := x / y
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x/fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)/y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)/fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)/fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -1438,36 +1438,36 @@ func makeBinOpQUO(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				x := vx.(uint64)
 				y := vy.(uint64)
 				if y == 0 {
-					return func(fr *frame) { fr.setReg(ir, x/y) }
+					return func(fr *frame) { fr.setUint64(ir, x/y) }
 				}
 				v := x / y
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x/fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)/y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)/fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)/fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
 				x := vx.(uintptr)
 				y := vy.(uintptr)
 				if y == 0 {
-					return func(fr *frame) { fr.setReg(ir, x/y) }
+					return func(fr *frame) { fr.setUintptr(ir, x/y) }
 				}
 				v := x / y
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x/fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)/y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)/fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)/fr.reg(iy).(uintptr)) }
 			}
 		case reflect.Float32:
 			if kx == kindConst && ky == kindConst {
@@ -1488,12 +1488,12 @@ func makeBinOpQUO(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(float64)
-				return func(fr *frame) { fr.setReg(ir, x/fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, x/fr.reg(iy).(float64)) }
 			} else if ky == kindConst {
 				y := vy.(float64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)/y) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)/y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(float64)/fr.reg(iy).(float64)) }
+				return func(fr *frame) { fr.setFloat64(ir, fr.reg(ix).(float64)/fr.reg(iy).(float64)) }
 			}
 		case reflect.Complex64:
 			if kx == kindConst && ky == kindConst {
@@ -1792,12 +1792,12 @@ func makeBinOpREM(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x%fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x%fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)%y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)%y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)%fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)%fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -1844,12 +1844,12 @@ func makeBinOpREM(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x%fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x%fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)%y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)%y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)%fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)%fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -1857,12 +1857,12 @@ func makeBinOpREM(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x%fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x%fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)%y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)%y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)%fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)%fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -1909,12 +1909,12 @@ func makeBinOpREM(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x%fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x%fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)%y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)%y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)%fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)%fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -1922,12 +1922,12 @@ func makeBinOpREM(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x%fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x%fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)%y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)%y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)%fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)%fr.reg(iy).(uintptr)) }
 			}
 		}
 	} else {
@@ -2093,12 +2093,12 @@ func makeBinOpAND(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x&fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x&fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)&y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)&y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)&fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)&fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -2145,12 +2145,12 @@ func makeBinOpAND(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x&fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x&fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)&y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)&y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)&fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)&fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -2158,12 +2158,12 @@ func makeBinOpAND(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x&fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x&fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)&y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)&y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)&fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)&fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -2210,12 +2210,12 @@ func makeBinOpAND(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x&fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x&fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)&y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)&y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)&fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)&fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -2223,12 +2223,12 @@ func makeBinOpAND(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x&fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x&fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)&y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)&y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)&fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)&fr.reg(iy).(uintptr)) }
 			}
 		}
 	} else {
@@ -2394,12 +2394,12 @@ func makeBinOpOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x|fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x|fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)|y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)|y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)|fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)|fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -2446,12 +2446,12 @@ func makeBinOpOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x|fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x|fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)|y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)|y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)|fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)|fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -2459,12 +2459,12 @@ func makeBinOpOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x|fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x|fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)|y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)|y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)|fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)|fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -2511,12 +2511,12 @@ func makeBinOpOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x|fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x|fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)|y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)|y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)|fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)|fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -2524,12 +2524,12 @@ func makeBinOpOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x|fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x|fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)|y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)|y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)|fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)|fr.reg(iy).(uintptr)) }
 			}
 		}
 	} else {
@@ -2695,12 +2695,12 @@ func makeBinOpXOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x^fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x^fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)^y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)^fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)^fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -2747,12 +2747,12 @@ func makeBinOpXOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x^fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x^fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)^y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)^fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)^fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -2760,12 +2760,12 @@ func makeBinOpXOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x^fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x^fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)^y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)^fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)^fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -2812,12 +2812,12 @@ func makeBinOpXOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x^fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x^fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)^y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)^fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)^fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -2825,12 +2825,12 @@ func makeBinOpXOR(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x^fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x^fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)^y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)^fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)^fr.reg(iy).(uintptr)) }
 			}
 		}
 	} else {
@@ -2996,12 +2996,12 @@ func makeBinOpANDNOT(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int)
-				return func(fr *frame) { fr.setReg(ir, x&^fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, x&^fr.reg(iy).(int)) }
 			} else if ky == kindConst {
 				y := vy.(int)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)&^y) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)&^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int)&^fr.reg(iy).(int)) }
+				return func(fr *frame) { fr.setInt(ir, fr.reg(ix).(int)&^fr.reg(iy).(int)) }
 			}
 		case reflect.Int8:
 			if kx == kindConst && ky == kindConst {
@@ -3048,12 +3048,12 @@ func makeBinOpANDNOT(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(int64)
-				return func(fr *frame) { fr.setReg(ir, x&^fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, x&^fr.reg(iy).(int64)) }
 			} else if ky == kindConst {
 				y := vy.(int64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)&^y) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)&^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(int64)&^fr.reg(iy).(int64)) }
+				return func(fr *frame) { fr.setInt64(ir, fr.reg(ix).(int64)&^fr.reg(iy).(int64)) }
 			}
 		case reflect.Uint:
 			if kx == kindConst && ky == kindConst {
@@ -3061,12 +3061,12 @@ func makeBinOpANDNOT(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint)
-				return func(fr *frame) { fr.setReg(ir, x&^fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, x&^fr.reg(iy).(uint)) }
 			} else if ky == kindConst {
 				y := vy.(uint)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)&^y) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)&^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint)&^fr.reg(iy).(uint)) }
+				return func(fr *frame) { fr.setUint(ir, fr.reg(ix).(uint)&^fr.reg(iy).(uint)) }
 			}
 		case reflect.Uint8:
 			if kx == kindConst && ky == kindConst {
@@ -3113,12 +3113,12 @@ func makeBinOpANDNOT(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uint64)
-				return func(fr *frame) { fr.setReg(ir, x&^fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, x&^fr.reg(iy).(uint64)) }
 			} else if ky == kindConst {
 				y := vy.(uint64)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)&^y) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)&^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uint64)&^fr.reg(iy).(uint64)) }
+				return func(fr *frame) { fr.setUint64(ir, fr.reg(ix).(uint64)&^fr.reg(iy).(uint64)) }
 			}
 		case reflect.Uintptr:
 			if kx == kindConst && ky == kindConst {
@@ -3126,12 +3126,12 @@ func makeBinOpANDNOT(pfn *function, instr *ssa.BinOp) func(fr *frame) {
 				return func(fr *frame) { fr.setReg(ir, v) }
 			} else if kx == kindConst {
 				x := vx.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, x&^fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, x&^fr.reg(iy).(uintptr)) }
 			} else if ky == kindConst {
 				y := vy.(uintptr)
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)&^y) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)&^y) }
 			} else {
-				return func(fr *frame) { fr.setReg(ir, fr.reg(ix).(uintptr)&^fr.reg(iy).(uintptr)) }
+				return func(fr *frame) { fr.setUintptr(ir, fr.reg(ix).(uintptr)&^fr.reg(iy).(uintptr)) }
 			}
 		}
 	} else {
